@@ -1,0 +1,3 @@
+/home/rute/Documents/cadeiras/5ano/vc/teste/CMakeFiles/rebuild_cache.dir
+/home/rute/Documents/cadeiras/5ano/vc/teste/CMakeFiles/teste.dir
+/home/rute/Documents/cadeiras/5ano/vc/teste/CMakeFiles/edit_cache.dir
