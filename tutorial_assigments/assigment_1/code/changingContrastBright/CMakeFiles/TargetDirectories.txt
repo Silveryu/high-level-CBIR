@@ -1,0 +1,3 @@
+/home/rute/Documents/cadeiras/5ano/vc/tutorial/changingContrastBright/CMakeFiles/rebuild_cache.dir
+/home/rute/Documents/cadeiras/5ano/vc/tutorial/changingContrastBright/CMakeFiles/changingContrastBright.dir
+/home/rute/Documents/cadeiras/5ano/vc/tutorial/changingContrastBright/CMakeFiles/edit_cache.dir

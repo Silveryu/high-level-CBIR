@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( exer7 )
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( exer7 histNorm.cpp )
+target_link_libraries( exer7 ${OpenCV_LIBS} )
