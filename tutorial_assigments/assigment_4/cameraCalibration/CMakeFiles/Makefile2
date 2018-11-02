@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration
+CMAKE_SOURCE_DIR = /home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration
+CMAKE_BINARY_DIR = /home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration
 
 #=============================================================================
 # Target rules for target CMakeFiles/calib.dir
@@ -66,7 +66,7 @@ CMAKE_BINARY_DIR = /home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/ca
 CMakeFiles/calib.dir/all:
 	$(MAKE) -f CMakeFiles/calib.dir/build.make CMakeFiles/calib.dir/depend
 	$(MAKE) -f CMakeFiles/calib.dir/build.make CMakeFiles/calib.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration/CMakeFiles --progress-num=1,2 "Built target calib"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration/CMakeFiles --progress-num=1,2 "Built target calib"
 .PHONY : CMakeFiles/calib.dir/all
 
 # Include target in all.
@@ -76,9 +76,9 @@ all: CMakeFiles/calib.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/calib.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration/CMakeFiles 2
 	$(MAKE) -f CMakeFiles/Makefile2 CMakeFiles/calib.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration/CMakeFiles 0
 .PHONY : CMakeFiles/calib.dir/rule
 
 # Convenience name for target.

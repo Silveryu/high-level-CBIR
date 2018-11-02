@@ -124,6 +124,12 @@ int main(int argc, char **argv)
   for (i=0;i<n_boards;i++)
     std::cout << std::endl << rotation_vectors.at(i);
 
+    printf("saving xml...\n" );
+  cv::FileStorage fs("CamParams.xml", cv::FileStorage::WRITE);
+  fs << "cameraMatrix" << intrinsic << "distCoeffs" << distCoeffs;
+  fs.release();
+
+
   std::vector<cv::Point3f> points;
   std::vector<cv::Point2f> i_points;
 

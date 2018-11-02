@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration/chessboard.cpp
+/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration/chessboard.cpp
 iostream
 -
 vector
@@ -22,7 +22,7 @@ opencv2/calib3d/calib3d.hpp
 opencv2/imgproc/imgproc.hpp
 -
 opencv2/imgproc/imgproc_c.h
-/home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration/opencv2/imgproc/imgproc_c.h
+/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration/opencv2/imgproc/imgproc_c.h
 
 /usr/local/include/opencv4/opencv2/calib3d.hpp
 opencv2/core.hpp

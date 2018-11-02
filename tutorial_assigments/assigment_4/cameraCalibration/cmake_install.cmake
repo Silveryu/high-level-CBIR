@@ -1,4 +1,4 @@
-# Install script for directory: /home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration
+# Install script for directory: /home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/rute/Documents/cadeiras/5ano/vc/tutorial/calibration/cameraCalibration/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_4/cameraCalibration/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
