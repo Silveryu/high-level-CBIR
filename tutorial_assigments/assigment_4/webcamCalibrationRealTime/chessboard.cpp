@@ -144,9 +144,11 @@ int main(int argc, char **argv)
 
         cv::line(image,i_points.at(0),i_points.at(1),cvScalar(255,0,0),2, 0);
 
-        cv::imshow("Result",image);
+        //cv::imshow("Result",image);
 
       }
+
+      cv::imshow("Result",image);
     }
 
 
