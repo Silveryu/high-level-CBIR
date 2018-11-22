@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 
   char filename[200];
 
-  sprintf(filename,"..//..//images//left%02d.jpg",1);
+  sprintf(filename,"..//images//left%02d.jpg",1);
   cv::Mat  imagel = cv::imread(filename);
   if(!imagel.data)
   {
@@ -99,7 +99,7 @@ int main(int argc, char **argv)
     return 0;
   }
 
-  sprintf(filename,"..//..//images//right%02d.jpg",1);
+  sprintf(filename,"..//images//right%02d.jpg",1);
   cv::Mat  imager = cv::imread(filename);
   if(!imager.data)
   {
@@ -150,7 +150,7 @@ int main(int argc, char **argv)
   cv::setMouseCallback( "Rectify_right", mouseHandlerR,&remap_imgl);
 
   std::cout << "Rectified images" << std::endl;
-  cv::waitKey(-1);
+  while(true) cv::waitKey(-1);
 
   return 0;
   }

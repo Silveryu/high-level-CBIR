@@ -103,7 +103,7 @@ class SimpleFreenect
 		 * Do not call. Internal callback function.
 		 */
 		void processEventsCallback();
-
+	
 	private:
 		// Internal buffers and book keeping variables
 		uint8_t depthBuffer[FREENECT_DEPTH_11BIT_SIZE];
