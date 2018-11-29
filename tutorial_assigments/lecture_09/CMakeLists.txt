@@ -1,0 +1,6 @@
+CMAKE_MINIMUM_REQUIRED( VERSION 2.8 )
+PROJECT( motion )
+FIND_PACKAGE( OpenCV REQUIRED )
+
+ADD_EXECUTABLE( lucasKanade lucasKanade.cpp )
+TARGET_LINK_LIBRARIES( lucasKanade ${OpenCV_LIBS} )
