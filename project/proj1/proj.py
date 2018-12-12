@@ -10,10 +10,10 @@ import numpy as np
 import os.path
 
 # Initialize the parameters
-confThreshold = 0.5  #Confidence threshold
-nmsThreshold = 0.4   #Non-maximum suppression threshold
-inpWidth = 416       #Width of network's input image
-inpHeight = 416      #Height of network's input image
+confThreshold = 0.5  # Confidence threshold
+nmsThreshold = 0.4   # Non-maximum suppression threshold
+inpWidth = 416       # Width of network's input image
+inpHeight = 416      # Height of network's input image
 
 parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
 parser.add_argument('--image', help='Path to image file.')
@@ -21,15 +21,15 @@ parser.add_argument('--video', help='Path to video file.')
 args = parser.parse_args()
 
 # Load names of classes
-classesFile = "coco.names";
-classes = None
+classesFile = "coco.names"
+
 with open(classesFile, 'rt') as f:
     classes = f.read().rstrip('\n').split('\n')
 
 print(classes)
 # Give the configuration and weight files for the model and load the network using them.
-modelConfiguration = "yolov3.cfg";
-modelWeights = "yolov3.weights";
+modelConfiguration = "yolov3.cfg"
+modelWeights = "yolov3.weights"
 
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
