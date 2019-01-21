@@ -16,7 +16,7 @@ unk_image = cv2.imread("faces/harrison3.jpeg")[:, :, ::-1]
 face_locations = face_recognition.face_locations(unk_image)
 face_encodings = face_recognition.face_encodings(unk_image, face_locations)
 
-for face_encoding in  face_encodings:
+for face_encoding in face_encodings:
     match = face_recognition.compare_faces([img1_enc, img2_enc, img3_enc], face_encoding, tolerance=0.60)
     print(match)
     print(face_recognition.face_distance([img1_enc, img2_enc, img3_enc], face_encoding))
