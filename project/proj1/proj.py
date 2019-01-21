@@ -59,7 +59,7 @@ def drawPred(classId, conf, left, top, right, bottom):
     labelSize, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
     top = max(top, labelSize[1])
     cv.rectangle(frame, (left, top - round(1.5*labelSize[1])), (left + round(1.5*labelSize[0]), top + baseLine), (255, 255, 255), cv.FILLED)
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0,0,0), 1)
+    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
 def postprocess(frame, outs):
@@ -125,9 +125,6 @@ else:
     # Webcam input
     cap = cv.VideoCapture(0)
 
-# Get the video writer initialized to save the output video
-if (not args.image):
-    vid_writer = cv.VideoWriter(outputFile, cv.VideoWriter_fourcc('M','J','P','G'), 30, (round(cap.get(cv.CAP_PROP_FRAME_WIDTH)),round(cap.get(cv.CAP_PROP_FRAME_HEIGHT))))
 
 while cv.waitKey(1) < 0:
 
@@ -164,7 +161,6 @@ while cv.waitKey(1) < 0:
     # Write the frame with the detection boxes
     if (args.image):
         cv.imwrite(outputFile, frame.astype(np.uint8));
-    else:
-        vid_writer.write(frame.astype(np.uint8))
+
 
     cv.imshow(winName, frame)
