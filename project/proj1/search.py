@@ -153,7 +153,7 @@ if __name__ == "__main__":
     if args.debug:
         debug = True
 
-    file = args.path
+    file = args.image
     image = cv.imread(file)
 
     index = deserialize_obj("index")
