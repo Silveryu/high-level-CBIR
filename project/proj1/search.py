@@ -188,7 +188,6 @@ def postprocess(image, outs, outsTree,debug=False):
         cv.waitKey(0)
         print(img_info)
 
-    print(img_info)
     return img_info
 
 
