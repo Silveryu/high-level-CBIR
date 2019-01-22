@@ -21,7 +21,7 @@ def serialize_obj(obj, name):
 
 
 # Draw the predicted bounding box
-def draw_pred(frame, classes, classId, conf, left, top, right, bottom):
+def draw_pred(frame, classes, classId, conf, left, top, right, bottom, draw_label = False):
     # Draw a bounding box.
     cv.rectangle(frame, (left, top), (right, bottom), (255, 178, 50), 3)
 
@@ -34,10 +34,11 @@ def draw_pred(frame, classes, classId, conf, left, top, right, bottom):
         label = '%s:%s' % (classes[classId], label)
 
     # Display the label at the top of the bounding box
-    label_size, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-    top = max(top, label_size[1])
-    cv.rectangle(frame, (left, top - round(1.5*label_size[1])), (left + round(1.5*label_size[0]), top + baseLine), (255, 255, 255), cv.FILLED)
-    cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
+    if draw_label:
+        label_size, baseLine = cv.getTextSize(label, cv.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+        top = max(top, label_size[1])
+        cv.rectangle(frame, (left, top - round(0.5*label_size[1])), (left + round(1.5*label_size[0]), top + baseLine), (255, 255, 255), cv.FILLED)
+        cv.putText(frame, label, (left, top), cv.FONT_HERSHEY_SIMPLEX, 0.75, (0, 0, 0), 1)
 
 
 # salience score given by percentage of attention it gets

@@ -27,8 +27,8 @@ with open(classesFile, 'rt') as f:
 # Give the configuration and weight files for the model and load the network using them.
 modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
-#modelConfigurationBears = "yolov3-tiny.cfg"
-#modelWeightsBears = "yolov3-tiny_final.weights"
+modelConfigurationBears = "yolov3-tiny.cfg"
+modelWeightsBears = "yolov3-tiny_final.weights"
 
 def add_to_index(index, indexText,imgs_info, img_info, img_text,file):
     for key, value in img_info.items():
@@ -81,14 +81,14 @@ def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs,s
 
     saliency = cv.saliency.StaticSaliencySpectralResidual_create()
     _, saliency_map = saliency.computeSaliency(image)
+    if debug:
+        saliency_map_u = (saliency_map * 255).astype("uint8")
     # convert to int if indexing takes too long
     # saliency_map = (saliency_map * 255).astype("uint8")
 
     # Perform non maximum suppression to eliminate redundant overlapping boxes with
     # lower confidences.
     indices = cv.dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold)
-    print("indices: ")
-    print(indices)
     # what actually gets added
     for i in indices:
         i = i[0]
@@ -106,6 +106,8 @@ def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs,s
             width = box[2]
             height = box[3]
             draw_pred(image, classes, class_ids[i], confidences[i], left, top, left + width, top + height)
+            draw_pred(saliency_map_u, classes, class_ids[i], confidences[i], left, top, left + width, top + height)
+
 
     if person_class_id in img_info:
         if debug:
@@ -123,10 +125,11 @@ def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs,s
         textReged = list(map(lambda word: re.sub('[^A-Za-z0-9]+', '', word),resultText))
         textStemmed = list(map(lambda word: sno.stem(word), textReged))
         img_text=collections.Counter(textStemmed)
-    print(img_text)
     if debug:
         cv.imshow("img", image)
-        cv.imshow("saliency_map", saliency_map)
+        cv.imshow("saliency_map", saliency_map_u)
+        # cv.imwrite("../report/Figures/salience_image_example_bbox.jpg", image)
+        # cv.imwrite("../report/Figures/salience_map_bbox.jpg", saliency_map_u)
         cv.waitKey(0)
         print(img_info)
 
@@ -140,15 +143,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--path', help='Path to image album')
-    parser.add_argument("--debug", help="show debug info")
+    parser.add_argument('-d', action='store_true', help="show debug info")
 
     args = parser.parse_args()
 
     debug = False
-    if args.debug:
+    if args.d:
         debug = True
 
-    imagesName = [file for file in glob.glob(args.path + "/*")]
+    imagesName = [file for file in glob.glob(args.path + "/*")] + glob.glob(args.path)
 
     sno = nltk.stem.SnowballStemmer('english')
 

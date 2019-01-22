@@ -71,7 +71,6 @@ def verifyText(image):
     	"feature_fusion/concat_3"]
 
     # load the pre-trained EAST text detector
-	print("[INFO] loading EAST text detector...")
 	east="frozen_east_text_detection.pb"
 	net = cv2.dnn.readNet(east)
 
