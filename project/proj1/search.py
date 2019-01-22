@@ -7,6 +7,10 @@ import os.path
 import glob
 from utils import salience_score, draw_pred, get_output_names, deserialize_obj
 import math
+import collections
+import re
+import nltk
+import operator
 import face_recognition
 
 # Initialize the parameters
@@ -21,6 +25,33 @@ with open(classesFile, 'rt') as f:
 modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
 person_class_id = 0
+
+def search_by_text(query, indexText):
+    result = {}
+
+    query = query.split()
+    sno = nltk.stem.SnowballStemmer('english')
+    queryReged = list(map(lambda word: re.sub('[^A-Za-z0-9]+', '', word),query))
+    queryStemmed = list(map(lambda word: sno.stem(word), queryReged))
+    print(indexText)
+
+    totalToNormalize = 0
+    for term in queryStemmed:
+        if term in indexText:
+            lst = indexText[term]
+            for x,y in lst:
+                print(x,y)
+                if x in result:
+                    result[x]+=y
+                else:
+                    result[x]=y
+                totalToNormalize+=y
+    for key in result:
+        result[key] = result[key]/totalToNormalize
+
+
+    return sorted(result.items(), key=operator.itemgetter(1))
+
 
 
 def search_index(img_info, imgs_info, pic_encodings, face_encodings, index):
@@ -145,6 +176,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--image', help='Path to images file.')
+    parser.add_argument('--text', help='Text to search for image')
     parser.add_argument('-d', action='store_true', help="show debug info")
 
     args = parser.parse_args()
@@ -153,29 +185,33 @@ if __name__ == "__main__":
     if args.d:
         debug = True
 
-    file = args.image
-    image = cv.imread(file)
+    if args.text == None:
 
-    index = deserialize_obj("index")
-    imgs_info = deserialize_obj("imgs_info")
-    face_encodings = deserialize_obj("face_encodings")
+        file = args.image
+        image = cv.imread(file)
 
-    net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
-    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-    net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+        index = deserialize_obj("index")
+        imgs_info = deserialize_obj("imgs_info")
+        face_encodings = deserialize_obj("face_encodings")
 
-    # Create a 4D blob from a frame.
-    blob = cv.dnn.blobFromImage(image, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
-    # Sets the input to the network
-    net.setInput(blob)
-    # Runs the forward pass to get output of the output layers
-    outs = net.forward(get_output_names(net))
-    # Remove the bounding boxes with low confidence
-    img_info = postprocess(image, outs, debug)
+        net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
+        net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+        net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
-    # BGR to RGB
-    unk_image = image[:, :, ::-1]
-    pic_locations = face_recognition.face_locations(unk_image)
-    pic_encodings = face_recognition.face_encodings(unk_image, pic_locations)
+        # Create a 4D blob from a frame.
+        blob = cv.dnn.blobFromImage(image, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
+        # Sets the input to the network
+        net.setInput(blob)
+        # Runs the forward pass to get output of the output layers
+        outs = net.forward(get_output_names(net))
+        # Remove the bounding boxes with low confidence
+        img_info = postprocess(image, outs, debug)
 
-    print(search_index(img_info, imgs_info, pic_encodings, face_encodings, index))
+        # BGR to RGB
+        unk_image = image[:, :, ::-1]
+        pic_locations = face_recognition.face_locations(unk_image)
+        pic_encodings = face_recognition.face_encodings(unk_image, pic_locations)
+        print(search_index(img_info, imgs_info, pic_encodings, face_encodings, index))
+    else:
+        indexText = deserialize_obj("indexText")
+        print(search_by_text(args.text, indexText))
