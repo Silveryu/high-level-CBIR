@@ -68,6 +68,8 @@ def postprocess(index, imgs_info, face_encodings, image, file, outs, debug = Fal
 
     saliency = cv.saliency.StaticSaliencySpectralResidual_create()
     _, saliency_map = saliency.computeSaliency(image)
+    if debug:
+        saliency_map_u = (saliency_map * 255).astype("uint8")
     # convert to int if indexing takes too long
     # saliency_map = (saliency_map * 255).astype("uint8")
 
@@ -91,6 +93,8 @@ def postprocess(index, imgs_info, face_encodings, image, file, outs, debug = Fal
             width = box[2]
             height = box[3]
             draw_pred(image, classes, class_ids[i], confidences[i], left, top, left + width, top + height)
+            draw_pred(saliency_map_u, classes, class_ids[i], confidences[i], left, top, left + width, top + height)
+
 
     if person_class_id in img_info:
         if debug:
@@ -103,7 +107,9 @@ def postprocess(index, imgs_info, face_encodings, image, file, outs, debug = Fal
 
     if debug:
         cv.imshow("img", image)
-        cv.imshow("saliency_map", saliency_map)
+        cv.imshow("saliency_map", saliency_map_u)
+        # cv.imwrite("../report/Figures/salience_image_example_bbox.jpg", image)
+        # cv.imwrite("../report/Figures/salience_map_bbox.jpg", saliency_map_u)
         cv.waitKey(0)
         print(img_info)
 
@@ -115,15 +121,15 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--path', help='Path to image album')
-    parser.add_argument("--debug", help="show debug info")
+    parser.add_argument('-d', action='store_true', help="show debug info")
 
     args = parser.parse_args()
 
     debug = False
-    if args.debug:
+    if args.d:
         debug = True
 
-    imagesName = [file for file in glob.glob(args.path + "/*")]
+    imagesName = [file for file in glob.glob(args.path + "/*")] + glob.glob(args.path)
 
     index = {}
     imgs_info = {}
@@ -158,7 +164,6 @@ if __name__ == "__main__":
         img_info = postprocess(index, imgs_info, face_encodings, image, file, outs, debug)
         if debug:
             print(img_info)
-
 
     serialize_obj(index, "index")
     serialize_obj(imgs_info, "imgs_info")

@@ -67,9 +67,9 @@ def obj_cost(y, y_salience, y_hat, y_hat_salience):
             return math.log(1 + y_hat)*math.e**y_salience
     else:
         if y_hat == 0:
-            return (1 + math.log10(y)) * math.e ** y_salience
+            return (1 + math.log(y)) * math.e ** y_salience
         else:
-            return abs(math.log10(y) - math.log10(y_hat))*abs(y_salience - y_hat_salience)
+            return abs(math.log(y) - math.log(y_hat))*abs(y_salience - y_hat_salience)
 
 
 def face_discount(face_dist):
@@ -145,12 +145,12 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--image', help='Path to images file.')
-    parser.add_argument("--debug", help="show debug info")
+    parser.add_argument('-d', action='store_true', help="show debug info")
 
     args = parser.parse_args()
 
     debug = False
-    if args.debug:
+    if args.d:
         debug = True
 
     file = args.image
