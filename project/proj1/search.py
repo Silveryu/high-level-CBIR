@@ -237,7 +237,24 @@ if __name__ == "__main__":
         unk_image = image[:, :, ::-1]
         pic_locations = face_recognition.face_locations(unk_image)
         pic_encodings = face_recognition.face_encodings(unk_image, pic_locations)
-        print(search_index(img_info, imgs_info, pic_encodings, face_encodings, index))
+        res = search_index(img_info, imgs_info, pic_encodings, face_encodings, index)
+        print(res)
+        i = 0
+        for r in res:
+            i+=1
+            if(i>5):
+                break
+            cv.imshow("result {}".format(i), cv.imread(r[0]))
+            cv.waitKey(0)
+
     else:
         indexText = deserialize_obj("indexText")
-        print(search_by_text(args.text, indexText))
+        res = search_by_text(args.text, indexText)
+        print(res)
+        i = 0
+        for r in res:
+            i += 1
+            if (i > 5):
+                break
+            cv.imshow("result {}".format(i), cv.imread(r[0]))
+            cv.waitKey(0)
