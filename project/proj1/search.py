@@ -11,6 +11,7 @@ import collections
 import re
 import nltk
 import operator
+import face_recognition
 
 # Initialize the parameters
 confThreshold = 0.5  # Confidence threshold
@@ -23,6 +24,7 @@ with open(classesFile, 'rt') as f:
 # Give the configuration and weight files for the model and load the network using them.
 modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
+person_class_id = 0
 
 def search_by_text(query, indexText):
     result = {}
@@ -52,22 +54,28 @@ def search_by_text(query, indexText):
 
 
 
-def search_index(img_info, imgs_info, index):
-
+def search_index(img_info, imgs_info, pic_encodings, face_encodings, index):
     # union of all matches
-    result = []
+    rel_images = []
     for obj, _ in img_info.items():
         if obj in index:
-            result += [img for img in index[obj]]
+            rel_images += index[obj]
 
-    print("img_info")
-    for img in result:
-        print((img, dist(img_info, imgs_info[img])))
+    rel_images = set(rel_images)
 
-    return sorted([(img, dist(img_info, imgs_info[img])) for img in result], key=lambda res_tup: res_tup[1])
+    face_disc = {}
+
+    for img in face_encodings:
+        if len(pic_encodings) > 0:
+            face_disc[img] = 0
+            for pic_encoding in pic_encodings:
+                face_disc[img] = min([face_discount(dist) for dist in
+                                      face_recognition.face_distance(face_encodings[img], pic_encoding)])
+    return sorted([(img, obj_dist(img_info, imgs_info[img]) + face_disc.get(img, 0))\
+                   for img in rel_images], key=lambda res_tup: res_tup[1])
 
 
-def dist(img_info_query, img_info_doc):
+def obj_dist(img_info_query, img_info_doc):
     cost = 0
     for obj in set(img_info_query.keys()) | set(img_info_doc.keys()):
         y, y_hat, y_imp, y_hat_imp = 0, 0, 0, 0
@@ -75,15 +83,14 @@ def dist(img_info_query, img_info_doc):
             y, y_imp = img_info_query.get(obj)
         if obj in img_info_doc:
             y_hat, y_hat_imp = img_info_doc.get(obj)
-        print(j(y, y_imp, y_hat, y_imp))
-        print()
-        cost += j(y, y_imp, y_hat, y_imp)
+
+        cost += obj_cost(y, y_imp, y_hat, y_hat_imp)
+
     return cost
 
 
 # y is original vector
-def j(y, y_salience, y_hat, y_hat_salience):
-    print(y, y_salience, y_hat, y_hat_salience)
+def obj_cost(y, y_salience, y_hat, y_hat_salience):
     if y == 0:
         if y_hat == 0:
             return 0
@@ -93,7 +100,17 @@ def j(y, y_salience, y_hat, y_hat_salience):
         if y_hat == 0:
             return (1 + math.log10(y)) * math.e ** y_salience
         else:
-            return abs(math.log10(y) - math.log10(y_hat))*abs(1 + math.e**y_salience - math.e**y_hat_salience)
+            return abs(math.log10(y) - math.log10(y_hat))*abs(y_salience - y_hat_salience)
+
+
+def face_discount(face_dist):
+    if face_dist <= 0.6:
+        return -10
+    elif 0.6 < face_dist < 1:
+        # make it so out is [0, 1] and then apply log to it
+        return max(math.log((face_dist - 0.6)*2.5), -10)
+    else:
+        return 0
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
@@ -159,16 +176,23 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--image', help='Path to images file.')
-    parser.add_argument('--path', help='Path to videos file.')
     parser.add_argument('--text', help='Text to search for image')
+    parser.add_argument("--debug", help="show debug info")
 
     args = parser.parse_args()
+
+    debug = False
+    if args.debug:
+        debug = True
+
     if args.text == None:
-        file = args.path
+
+        file = args.image
         image = cv.imread(file)
 
         index = deserialize_obj("index")
         imgs_info = deserialize_obj("imgs_info")
+        face_encodings = deserialize_obj("face_encodings")
 
         net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
         net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -181,9 +205,14 @@ if __name__ == "__main__":
         # Runs the forward pass to get output of the output layers
         outs = net.forward(get_output_names(net))
         # Remove the bounding boxes with low confidence
-        img_info = postprocess(image, outs)
+        img_info = postprocess(image, outs, debug)
 
-        print(search_index(img_info, imgs_info, index))
+        # BGR to RGB
+        unk_image = image[:, :, ::-1]
+        pic_locations = face_recognition.face_locations(unk_image)
+        pic_encodings = face_recognition.face_encodings(unk_image, pic_locations)
+
+        print(search_index(img_info, imgs_info, pic_encodings, face_encodings, index))
     else:
         indexText = deserialize_obj("indexText")
         print(search_by_text(args.text, indexText))

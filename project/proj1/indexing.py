@@ -9,6 +9,7 @@ import glob
 import pickle
 import nltk
 from utils import serialize_obj, get_output_names, draw_pred, salience_score
+from tqdm import tqdm
 from text_recognizer import verifyText
 import collections
 import re
@@ -37,7 +38,7 @@ def add_to_index(index, indexText,imgs_info, img_info, img_text,file):
             index[key] = lst
         else:
             index[key] = [file]
-    print(img_text)
+
     for key, value in img_text.items():
         if key in indexText:
             lst = indexText[key]
@@ -163,12 +164,20 @@ if __name__ == "__main__":
     net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
     net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+    tqdm.write("Indexing...")
 
-    for file in imagesName:
+    loop_range = range(len(imagesName)) if debug else tqdm(range(len(imagesName)))
+
+    for i in loop_range:
+
+        file = imagesName[i]
+        if os.path.isdir(file):
+            continue
+
         image = cv.imread(file)
 
         if image is None:
-            print("Error in reading file ", file)
+            tqdm.write("Error in reading file {}".format(file))
             continue
 
         # Create a 4D blob from a frame.
@@ -179,15 +188,18 @@ if __name__ == "__main__":
         outs = net.forward(get_output_names(net))
 
         # Remove the bounding boxes with low confidence
-        img_info = postprocess(index, indexText, imgs_info, face_encodings, image, file, outs, sno, debug)
 
-        print(img_info)
+        img_info = postprocess(index, indexText, imgs_info, face_encodings, image, file, outs, sno, debug)
+        if debug:
+            print(img_info)
 
     serialize_obj(index, "index")
     serialize_obj(indexText, "indexText")
     serialize_obj(imgs_info, "imgs_info")
     serialize_obj(face_encodings, "face_encodings")
-    print(index)
+
+    tqdm.write("Done!")
+
     if debug:
         print("Index:", index)
         print("Images info:", imgs_info)
