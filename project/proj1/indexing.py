@@ -7,8 +7,11 @@ import numpy as np
 import os.path
 import glob
 import pickle
+import nltk
 from utils import serialize_obj, get_output_names, draw_pred, salience_score
-
+from text_recognizer import verifyText
+import collections
+import re
 
 # Initialize the parameters and general config
 confThreshold = 0.5  # Confidence threshold
@@ -23,9 +26,10 @@ with open(classesFile, 'rt') as f:
 # Give the configuration and weight files for the model and load the network using them.
 modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
+#modelConfigurationBears = "yolov3-tiny.cfg"
+#modelWeightsBears = "yolov3-tiny_final.weights"
 
-
-def add_to_index(index, imgs_info, img_info, file):
+def add_to_index(index, indexText,imgs_info, img_info, img_text,file):
     for key, value in img_info.items():
         if key in index:
             lst = index[key]
@@ -33,11 +37,20 @@ def add_to_index(index, imgs_info, img_info, file):
             index[key] = lst
         else:
             index[key] = [file]
+    print(img_text)
+    for key, value in img_text.items():
+        if key in indexText:
+            lst = indexText[key]
+            lst.append((file,value))
+            indexText[key] = lst
+        else:
+            indexText[key] = [(file,value)]
+
     imgs_info[file] = img_info
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
-def postprocess(index, imgs_info, face_encodings, image, file, outs, debug = False):
+def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs,sno, debug = False):
     image_height = image.shape[0]
     image_width = image.shape[1]
 
@@ -73,6 +86,8 @@ def postprocess(index, imgs_info, face_encodings, image, file, outs, debug = Fal
     # Perform non maximum suppression to eliminate redundant overlapping boxes with
     # lower confidences.
     indices = cv.dnn.NMSBoxes(boxes, confidences, confThreshold, nmsThreshold)
+    print("indices: ")
+    print(indices)
     # what actually gets added
     for i in indices:
         i = i[0]
@@ -100,16 +115,26 @@ def postprocess(index, imgs_info, face_encodings, image, file, outs, debug = Fal
         if len(pic_encodings) > 0:
             face_encodings[file] = pic_encodings
 
+
+    resultText = verifyText(image)
+    img_text = {}
+    if len(resultText)!= 0:
+        textReged = list(map(lambda word: re.sub('[^A-Za-z0-9]+', '', word),resultText))
+        textStemmed = list(map(lambda word: sno.stem(word), textReged))
+        img_text=collections.Counter(textStemmed)
+    print(img_text)
     if debug:
         cv.imshow("img", image)
         cv.imshow("saliency_map", saliency_map)
         cv.waitKey(0)
         print(img_info)
 
-    add_to_index(index, imgs_info, img_info, file)
+
+
+    add_to_index(index, indexText,imgs_info, img_info, img_text, file)
     return img_info
 
-    
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
@@ -124,9 +149,16 @@ if __name__ == "__main__":
 
     imagesName = [file for file in glob.glob(args.path + "/*")]
 
+    sno = nltk.stem.SnowballStemmer('english')
+
     index = {}
+    indexText = {}
     imgs_info = {}
     face_encodings = {}
+    #model bears
+#    netBears = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
+#    netBears.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+#    netBears.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
     net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
     net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
@@ -145,15 +177,17 @@ if __name__ == "__main__":
         net.setInput(blob)
         # Runs the forward pass to get output of the output layers
         outs = net.forward(get_output_names(net))
+
         # Remove the bounding boxes with low confidence
-        img_info = postprocess(index, imgs_info, face_encodings, image, file, outs, debug)
+        img_info = postprocess(index, indexText, imgs_info, face_encodings, image, file, outs, sno, debug)
+
         print(img_info)
 
     serialize_obj(index, "index")
+    serialize_obj(indexText, "indexText")
     serialize_obj(imgs_info, "imgs_info")
     serialize_obj(face_encodings, "face_encodings")
-
+    print(index)
     if debug:
         print("Index:", index)
         print("Images info:", imgs_info)
-

@@ -7,6 +7,10 @@ import os.path
 import glob
 from utils import salience_score, draw_pred, get_output_names, deserialize_obj
 import math
+import collections
+import re
+import nltk
+import operator
 
 # Initialize the parameters
 confThreshold = 0.5  # Confidence threshold
@@ -19,6 +23,33 @@ with open(classesFile, 'rt') as f:
 # Give the configuration and weight files for the model and load the network using them.
 modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
+
+def search_by_text(query, indexText):
+    result = {}
+
+    query = query.split()
+    sno = nltk.stem.SnowballStemmer('english')
+    queryReged = list(map(lambda word: re.sub('[^A-Za-z0-9]+', '', word),query))
+    queryStemmed = list(map(lambda word: sno.stem(word), queryReged))
+    print(indexText)
+
+    totalToNormalize = 0
+    for term in queryStemmed:
+        if term in indexText:
+            lst = indexText[term]
+            for x,y in lst:
+                print(x,y)
+                if x in result:
+                    result[x]+=y
+                else:
+                    result[x]=y
+                totalToNormalize+=y
+    for key in result:
+        result[key] = result[key]/totalToNormalize
+
+
+    return sorted(result.items(), key=operator.itemgetter(1))
+
 
 
 def search_index(img_info, imgs_info, index):
@@ -129,25 +160,30 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Object Detection using YOLO in OPENCV')
     parser.add_argument('--image', help='Path to images file.')
     parser.add_argument('--path', help='Path to videos file.')
+    parser.add_argument('--text', help='Text to search for image')
+
     args = parser.parse_args()
+    if args.text == None:
+        file = args.path
+        image = cv.imread(file)
 
-    file = args.path
-    image = cv.imread(file)
+        index = deserialize_obj("index")
+        imgs_info = deserialize_obj("imgs_info")
 
-    index = deserialize_obj("index")
-    imgs_info = deserialize_obj("imgs_info")
+        net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
+        net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+        net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
-    net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
-    net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
-    net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+        # Create a 4D blob from a frame.
+        blob = cv.dnn.blobFromImage(image, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
+        # Sets the input to the network
+        net.setInput(blob)
+        # Runs the forward pass to get output of the output layers
+        outs = net.forward(get_output_names(net))
+        # Remove the bounding boxes with low confidence
+        img_info = postprocess(image, outs)
 
-    # Create a 4D blob from a frame.
-    blob = cv.dnn.blobFromImage(image, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
-    # Sets the input to the network
-    net.setInput(blob)
-    # Runs the forward pass to get output of the output layers
-    outs = net.forward(get_output_names(net))
-    # Remove the bounding boxes with low confidence
-    img_info = postprocess(image, outs)
-
-    print(search_index(img_info, imgs_info, index))
+        print(search_index(img_info, imgs_info, index))
+    else:
+        indexText = deserialize_obj("indexText")
+        print(search_by_text(args.text, indexText))
