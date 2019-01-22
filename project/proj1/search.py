@@ -33,14 +33,12 @@ def search_by_text(query, indexText):
     sno = nltk.stem.SnowballStemmer('english')
     queryReged = list(map(lambda word: re.sub('[^A-Za-z0-9]+', '', word),query))
     queryStemmed = list(map(lambda word: sno.stem(word), queryReged))
-    print(indexText)
 
     totalToNormalize = 0
     for term in queryStemmed:
         if term in indexText:
             lst = indexText[term]
             for x,y in lst:
-                print(x,y)
                 if x in result:
                     result[x]+=y
                 else:
@@ -48,7 +46,7 @@ def search_by_text(query, indexText):
                 totalToNormalize+=y
     for key in result:
         result[key] = result[key]/totalToNormalize
-
+    print(indexText)
 
     return sorted(result.items(), key=operator.itemgetter(1))
 
