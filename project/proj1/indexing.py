@@ -27,8 +27,10 @@ with open(classesFile, 'rt') as f:
 # Give the configuration and weight files for the model and load the network using them.
 modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
-modelConfigurationBears = "yolov3-tiny.cfg"
-modelWeightsBears = "yolov3-tiny_final.weights"
+
+modelConfigurationTree = "yolov3-tiny.cfg"
+modelWeightsTree = "yolov3-tiny_final.weights"
+
 
 def add_to_index(index, indexText,imgs_info, img_info, img_text,file):
     for key, value in img_info.items():
@@ -51,7 +53,7 @@ def add_to_index(index, indexText,imgs_info, img_info, img_text,file):
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
-def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs,sno, debug = False):
+def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs, outsTree,sno, debug = False):
     image_height = image.shape[0]
     image_width = image.shape[1]
 
@@ -68,6 +70,22 @@ def postprocess(index, indexText, imgs_info, face_encodings, image, file, outs,s
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
+            if confidence > confThreshold:
+                center_x = int(detection[0] * image_width)
+                center_y = int(detection[1] * image_height)
+                width = int(detection[2] * image_width)
+                height = int(detection[3] * image_height)
+                left = int(center_x - width / 2)
+                top = int(center_y - height / 2)
+                class_ids.append(class_id)
+                confidences.append(float(confidence))
+                boxes.append([left, top, width, height])
+
+    for out in outsTree:
+        for detection in out:
+            scores = detection[5:]
+            class_id = -1
+            confidence = scores[0]
             if confidence > confThreshold:
                 center_x = int(detection[0] * image_width)
                 center_y = int(detection[1] * image_height)
@@ -169,6 +187,10 @@ if __name__ == "__main__":
     net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
     tqdm.write("Indexing...")
 
+    netTree = cv.dnn.readNetFromDarknet(modelConfigurationTree, modelWeightsTree)
+    netTree.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+    netTree.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+
     loop_range = range(len(imagesName)) if debug else tqdm(range(len(imagesName)))
 
     for i in loop_range:
@@ -187,12 +209,13 @@ if __name__ == "__main__":
         blob = cv.dnn.blobFromImage(image, 1 / 255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
         # Sets the input to the network
         net.setInput(blob)
+        netTree.setInput(blob)
         # Runs the forward pass to get output of the output layers
         outs = net.forward(get_output_names(net))
-
+        outsTree = netTree.forward(get_output_names(netTree))
         # Remove the bounding boxes with low confidence
 
-        img_info = postprocess(index, indexText, imgs_info, face_encodings, image, file, outs, sno, debug)
+        img_info = postprocess(index, indexText, imgs_info, face_encodings, image, file, outs, outsTree,sno, debug)
         if debug:
             print(img_info)
 
@@ -202,7 +225,6 @@ if __name__ == "__main__":
     serialize_obj(face_encodings, "face_encodings")
 
     tqdm.write("Done!")
-
     if debug:
         print("Index:", index)
         print("Images info:", imgs_info)

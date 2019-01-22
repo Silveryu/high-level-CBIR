@@ -26,6 +26,10 @@ modelConfiguration = "yolov3.cfg"
 modelWeights = "yolov3.weights"
 person_class_id = 0
 
+modelConfigurationTree = "yolov3-tiny.cfg"
+modelWeightsTree = "yolov3-tiny_final.weights"
+
+
 def search_by_text(query, indexText):
     result = {}
 
@@ -112,7 +116,7 @@ def face_discount(face_dist):
 
 
 # Remove the bounding boxes with low confidence using non-maxima suppression
-def postprocess(image, outs, debug=False):
+def postprocess(image, outs, outsTree,debug=False):
     # Scan through all the bounding boxes output from the network and keep only the
     # ones with high confidence scores. Assign the box's class label as the class with the highest score.
     image_height = image.shape[0]
@@ -128,6 +132,23 @@ def postprocess(image, outs, debug=False):
             scores = detection[5:]
             class_id = np.argmax(scores)
             confidence = scores[class_id]
+            if confidence > confThreshold:
+                center_x = int(detection[0] * image_width)
+                center_y = int(detection[1] * image_height)
+                width = int(detection[2] * image_width)
+                height = int(detection[3] * image_height)
+                left = int(center_x - width / 2)
+                top = int(center_y - height / 2)
+                class_ids.append(class_id)
+                confidences.append(float(confidence))
+                boxes.append([left, top, width, height])
+
+
+    for out in outsTree:
+        for detection in out:
+            scores = detection[5:]
+            class_id = -1
+            confidence = scores[0]
             if confidence > confThreshold:
                 center_x = int(detection[0] * image_width)
                 center_y = int(detection[1] * image_height)
@@ -167,6 +188,7 @@ def postprocess(image, outs, debug=False):
         cv.waitKey(0)
         print(img_info)
 
+    print(img_info)
     return img_info
 
 
@@ -196,14 +218,21 @@ if __name__ == "__main__":
         net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
         net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
 
+
+        netTree = cv.dnn.readNetFromDarknet(modelConfigurationTree, modelWeightsTree)
+        netTree.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
+        netTree.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+
         # Create a 4D blob from a frame.
         blob = cv.dnn.blobFromImage(image, 1/255, (inpWidth, inpHeight), [0, 0, 0], 1, crop=False)
         # Sets the input to the network
         net.setInput(blob)
+        netTree.setInput(blob)
         # Runs the forward pass to get output of the output layers
         outs = net.forward(get_output_names(net))
+        outsTree = netTree.forward(get_output_names(netTree))
         # Remove the bounding boxes with low confidence
-        img_info = postprocess(image, outs, debug)
+        img_info = postprocess(image, outs, outsTree, debug)
 
         # BGR to RGB
         unk_image = image[:, :, ::-1]
