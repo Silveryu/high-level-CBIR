@@ -1,3 +1,0 @@
-/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_3/code/exer3/CMakeFiles/rebuild_cache.dir
-/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_3/code/exer3/CMakeFiles/exer3.dir
-/home/rute/Documents/cadeiras/5ano/vc/vc1819-76505-76532/tutorial_assigments/assigment_3/code/exer3/CMakeFiles/edit_cache.dir

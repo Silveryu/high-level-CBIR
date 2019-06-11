@@ -1,6 +1,0 @@
-cmake_minimum_required(VERSION 2.8)
-project( exer1_laplace )
-find_package( OpenCV REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
-add_executable( exer1_laplace laplace.cpp )
-target_link_libraries( exer1_laplace ${OpenCV_LIBS} )
